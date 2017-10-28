@@ -1,0 +1,15 @@
+{
+  "name": "donation-web",
+  "version": "1.0.0",
+  "description": "an application to host donations for candidates",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "joa44741",
+  "license": "ISC",
+  "dependencies": {
+    "hapi": "^16.6.2",
+    "inert": "^4.2.1"
+  }
+}
