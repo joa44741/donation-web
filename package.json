@@ -9,7 +9,9 @@
   "author": "joa44741",
   "license": "ISC",
   "dependencies": {
+    "handlebars": "^4.0.11",
     "hapi": "^16.6.2",
-    "inert": "^4.2.1"
+    "inert": "^4.2.1",
+    "vision": "^4.1.1"
   }
 }
