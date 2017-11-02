@@ -3,9 +3,28 @@
 const Hapi = require('hapi');
 
 var server = new Hapi.Server();
-server.connection({ port: process.env.PORT || 4000 });
+server.connection({port: process.env.PORT || 4000});
 
-server.register([require('inert'), require('vision')], err => {
+const initUsers = {
+  'bart@simpson.com': {
+    firstName: 'bart',
+    lastName: 'simpson',
+    email: 'bart@simpson.com',
+    password: 'secret',
+  },
+  'lisa@simpson.com': {
+    firstName: 'lisa',
+    lastName: 'simpson',
+    email: 'lisa@simpson.com',
+    password: 'secret',
+  },
+};
+
+server.bind({
+  users: initUsers,
+  donations: [],
+});
+server.register([require('inert'), require('vision'), require('hapi-auth-cookie')], err => {
 
   if (err) {
     throw err;
@@ -17,7 +36,22 @@ server.register([require('inert'), require('vision')], err => {
     },
     relativeTo: __dirname,
     path: './app/views',
+    layoutPath: './app/views/layout',
+    partialsPath: './app/views/partials',
+    layout: true,
     isCached: false,
+  });
+
+  server.auth.strategy('standard', 'cookie', {
+    password: 'secretpasswordnotrevealedtoanyone',
+    cookie: 'donation-cookie',
+    isSecure: false,
+    ttl: 24 * 60 * 60 * 1000,
+    redirectTo: '/login',
+  });
+
+  server.auth.default({
+    strategy: 'standard',
   });
 
   server.route(require('./routes'));
