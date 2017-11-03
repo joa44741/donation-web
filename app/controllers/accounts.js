@@ -1,5 +1,9 @@
 'use strict';
 
+const User = require('../models/user');
+const Joi = require('joi');
+
+
 exports.main = {
   auth: false,
   handler: function (request, reply) {
@@ -26,17 +30,40 @@ exports.login = {
 
 exports.authenticate = {
   auth: false,
+  validate: {
+
+    payload: {
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+    },
+
+    failAction: function (request, reply, source, error) {
+      reply.view('login', {
+        title: 'Sign up error',
+        errors: error.data.details,
+      }).code(400);
+    },
+
+    options: {
+      abortEarly: false,
+    },
+
+  },
   handler: function (request, reply) {
     const user = request.payload;
-    if ((user.email in this.users) && (user.password === this.users[user.email].password)) {
-      request.cookieAuth.set({
-        loggedIn: true,
-        loggedInUser: user.email,
-      });
-      reply.redirect('/home');
-    } else {
-      reply.redirect('/login');
-    }
+    User.findOne({ email: user.email }).then(foundUser => {
+      if (foundUser && foundUser.password === user.password) {
+        request.cookieAuth.set({
+          loggedIn: true,
+          loggedInUser: user.email,
+        });
+        reply.redirect('/home');
+      } else {
+        reply.redirect('/login');
+      }
+    }).catch(err => {
+      reply.redirect('/');
+    });
   },
 
 };
@@ -52,10 +79,37 @@ exports.logout = {
 
 exports.register = {
   auth: false,
+
+  validate: {
+
+    payload: {
+      firstName: Joi.string().required(),
+      lastName: Joi.string().required(),
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+    },
+
+    failAction: function (request, reply, source, error) {
+      reply.view('signup', {
+        title: 'Sign up error',
+        errors: error.data.details,
+      }).code(400);
+    },
+
+    options: {
+      abortEarly: false,
+    },
+
+  },
+
   handler: function (request, reply) {
-    const user = request.payload;
-    this.users[user.email] = user;
-    reply.redirect('/login');
+    const user = new User(request.payload);
+
+    user.save().then(newUser => {
+      reply.redirect('/login');
+    }).catch(err => {
+      reply.redirect('/');
+    });
   },
 
 };
@@ -63,23 +117,56 @@ exports.register = {
 exports.viewSettings = {
   handler: function (request, reply) {
     const userEmail = request.auth.credentials.loggedInUser;
-    const user = this.users[userEmail];
-    reply.view('settings', {user: user});
+    User.findOne({ email: userEmail }).then(foundUser => {
+      reply.view('settings', { title: 'Edit Account Settings', user: foundUser });
+    }).catch(err => {
+      reply.redirect('/');
+    });
   },
 
 };
 
 exports.updateSettings = {
+  validate: {
+
+    payload: {
+      firstName: Joi.string().required(),
+      lastName: Joi.string().required(),
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+    },
+
+    failAction: function (request, reply, source, error) {
+      reply.view('settings', {
+        title: 'Update settings error',
+        errors: error.data.details,
+        user: request.payload,
+    }).code(400);
+    },
+
+    options: {
+      abortEarly: false,
+    },
+
+  },
   handler: function (request, reply) {
-    const oldUserEmail = request.auth.credentials.loggedInUser;
-    delete this.users[oldUserEmail];
-    const user = request.payload;
-    this.users[user.email] = user;
-    request.cookieAuth.set({
-      loggedIn: true,
-      loggedInUser: user.email,
+    const loggedInUserEmail = request.auth.credentials.loggedInUser;
+    const editedUser = request.payload;
+    User.findOne({ email: loggedInUserEmail }).then(user => {
+      user.firstName = editedUser.firstName;
+      user.lastName = editedUser.lastName;
+      user.email = editedUser.email;
+      user.password = editedUser.password;
+      return user.save();
+    }).then(user => {
+      request.cookieAuth.set({
+        loggedIn: true,
+        loggedInUser: user.email,
+      });
+      reply.view('settings', { title: 'Edit Account Settings', user: user });
+    }).catch(err => {
+      reply.redirect('/');
     });
-    reply.redirect('/settings');
   },
 
 };
