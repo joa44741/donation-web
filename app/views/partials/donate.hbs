@@ -2,18 +2,16 @@
   <div class="ui grid ">
     <div class="ui form six wide column">
       <div class="ui stacked segment">
-        <form action="/donate" method="POST">
-          <div class="ui dropdown" name="amount">
-            <input type="hidden" name="amount">
-            <div class="text">Select Amount</div>
-            <i class="ui dropdown icon"></i>
-            <div class="menu">
-              <div class="item">50</div>
-              <div class="item">100</div>
-              <div class="item">1000</div>
+        <form class="ui form" action="/donate" method="POST">
+          <div class="grouped fields">
+            <h3> Enter Amount </h3>
+            <div class="field">
+              <label>Amount</label>
+              <input type="text" name="amount" placeholder="Amount"/>
             </div>
           </div>
           <div class="grouped inline fields">
+            <h3> Select Method </h3>
             <div class="field">
               <div class="ui radio checkbox">
                 <input type="radio" name="method" value="paypal">
@@ -27,8 +25,20 @@
               </div>
             </div>
           </div>
+          <div class="grouped inline fields">
+            <h3> Select Candidate </h3>
+            {{#each candidates }}
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input type="radio" name="candidate" value="{{lastName}},{{firstName}}">
+                  <label>{{lastName}}, {{firstName}}</label>
+                </div>
+              </div>
+            {{/each}}
+          </div>
           <button class="ui blue submit button">Donate</button>
         </form>
+        {{> formerror }}
       </div>
     </div>
     <aside class="six wide column">
