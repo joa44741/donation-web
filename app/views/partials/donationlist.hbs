@@ -22,10 +22,12 @@
             <td> {{candidate.lastName}}, {{candidate.firstName}} </td>
           </tr>
         {{/each}}
+        <tfoot>
         <tr>
-          <td>{{totaldonations.amount}}</td>
-          <td colspan="3">{{totaldonations.method}}</td>
+          <th>{{total}}</th>
+          <th>Total</th>
         </tr>
+        </tfoot>
         </tbody>
       </table>
     </article>

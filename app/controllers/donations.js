@@ -25,13 +25,10 @@ exports.report = {
   handler: function (request, reply) {
     Donation.find({}).populate('donor').populate('candidate').then(allDonations => {
       let sum = allDonations.map(a => a.amount).reduce((a, b) => a + b, 0);
-      let totaldonations = new Donation();
-      totaldonations.amount = sum;
-      totaldonations.method = 'Total';
       reply.view('report', {
         title: 'Donations to Date',
         donations: allDonations,
-        totaldonations: totaldonations,
+        total: sum,
       });
     }).catch(err => {
       reply.redirect('/');
