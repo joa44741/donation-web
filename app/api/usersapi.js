@@ -27,7 +27,7 @@ exports.findOne = {
   },
 
   handler: function (request, reply) {
-    User.findOne({_id: request.params.id}).then(user => {
+    User.findOne({ _id: request.params.id }).then(user => {
       if (user === null) {
         reply(Boom.notFound('id not found'));
       } else {
@@ -42,9 +42,7 @@ exports.findOne = {
 
 exports.create = {
 
-  auth: {
-    strategy: 'jwt',
-  },
+  auth: false,
 
   handler: function (request, reply) {
     const user = new User(request.payload);
@@ -80,10 +78,11 @@ exports.deleteOne = {
   },
 
   handler: function (request, reply) {
-    User.remove({_id: request.params.id}).then(res => {
+    User.remove({ _id: request.params.id }).then(res => {
       if (res.result.n === 0) {
         reply(Boom.notFound('id not found'));
       }
+
       reply(res).code(204);
     }).catch(err => {
       reply(Boom.notFound('id not found'));
